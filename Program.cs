@@ -1,6 +1,8 @@
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
+using CrucibleBlog.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +12,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 //Database Service
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
-
-builder.Services.AddDefaultIdentity<BlogUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
 //Error Service
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -26,6 +26,10 @@ builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.R
 builder.Services.AddMvc();
 
 //Custom Services
+builder.Services.AddScoped<IEmailSender, EmailService>();
+
+//Custom EmailSettings
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 var app = builder.Build();
 
