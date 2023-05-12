@@ -19,6 +19,12 @@ namespace CrucibleBlog.Models
         [NotMapped] 
         public string? FullName { get { return $"{FirstName} {LastName}"; } }
 
+        //Image Properties
+        public byte[]? ImageData { get; set; }
+        public string? ImageType { get; set; }
+
+        [NotMapped]
+        public virtual IFormFile? ImageFile { get; set; }
 
         //Navigation Properties
         public virtual ICollection<Comment> Comment { get; set; } = new HashSet<Comment>();

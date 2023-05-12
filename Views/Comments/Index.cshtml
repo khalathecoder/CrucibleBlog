@@ -16,10 +16,10 @@
                 @Html.DisplayNameFor(model => model.Body)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Created)
+                @Html.DisplayNameFor(model => model.CreatedDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Updated)
+                @Html.DisplayNameFor(model => model.UpdatedDate)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.UpdateReason)
@@ -40,16 +40,16 @@
                 @Html.DisplayFor(modelItem => item.Body)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Created)
+                    @Html.DisplayFor(modelItem => item.CreatedDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Updated)
+                    @Html.DisplayFor(modelItem => item.UpdatedDate)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdateReason)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.BlogPost.Content)
+                @Html.DisplayFor(modelItem => item.BlogPost!.Content)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.AuthorId)

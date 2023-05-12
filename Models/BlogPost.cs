@@ -20,10 +20,10 @@ namespace CrucibleBlog.Models
 
         [Required]
         [DataType(DataType.DateTime)]
-        public string? Created { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         [DataType(DataType.DateTime)]
-        public string? Updated { get; set; }
+        public DateTime UpdatedDate { get; set; }
 
         //TODO: MAKE THIS REQUIRED LATER
         public string? Slug { get; set; }
@@ -33,7 +33,6 @@ namespace CrucibleBlog.Models
 
         [Display(Name = "Published?")]
         public bool IsPublished { get; set; }
-        public int? CategoryId { get; set; } //foreign key
 
         //Image Properties
         public byte[]? ImageData { get; set; }
@@ -44,12 +43,13 @@ namespace CrucibleBlog.Models
 
         //Navigation Properties
         //category
+        public int? CategoryId { get; set; } //foreign key
         public virtual Category? Category { get; set; }
             
 
         //Navigation Collections
             //comments
-            public virtual ICollection<Comment> Comment { get; set; } = new HashSet<Comment>();
+            public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
             //tags
             public virtual ICollection<Tag> Tags { get; set; } = new HashSet<Tag>();
     }

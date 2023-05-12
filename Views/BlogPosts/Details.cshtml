@@ -1,6 +1,250 @@
 ﻿@model CrucibleBlog.Models.BlogPost
 
+@using CrucibleBlog.Enums;
+@using CrucibleBlog.Services.Interfaces
+@using Microsoft.AspNetCore.Identity;
+@inject IImageService _ImageService
+@inject UserManager<BlogUser> UserManager
+@inject SignInManager<BlogUser> SignInManager
+
 @{
+    ViewData["Title"] = "Details";
+}
+<style>
+    .ck-editor__editable_inline {
+        min-height: 300px;
+    }
+</style>
+<!-- Start Post Single Wrapper  -->
+<div class="post-single-wrapper axil-section-gap bg-color-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <!-- Start Banner Area -->
+                <div class="banner banner-single-post post-formate post-layout pb--40">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <!-- Start Single Slide  -->
+                                <div class="content-block">
+                                    <!-- Start Post Content  -->
+                                    <div class="post-content">
+                                        <div class="post-cat">
+                                            <div class="post-cat-list">
+                                                <a class="hover-flip-item-wrapper" href="#">
+                                                    <span class="hover-flip-item">
+                                                        <span data-text="@Model.Category?.Name">@Model.Category?.Name</span>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <h1 class="title">
+                                            @Model.Title
+                                        </h1>
+                                        <!-- Post Meta  -->
+                                        <div class="post-meta-wrapper">
+                                            <div class="post-meta">
+                                                <div class="post-author-avatar border-rounded">
+                                                    <img src="~/img/DefaultUserImage.png" alt="Author Images" style="height:80px;width:80px">
+                                                </div>
+                                                <div class="content">
+                                                    <h6 class="post-author-name">
+                                                        <a class="hover-flip-item-wrapper" href="author.html">
+                                                            <span class="hover-flip-item">
+                                                                <span data-text="Author/Admin">Author/Admin</span>
+                                                            </span>
+                                                        </a>
+                                                    </h6>
+                                                    <ul class="post-meta-list">
+                                                        <li>@Model.CreatedDate</li>
+                                                        <li>Can you figure out how to show the number of comments here?</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <ul class="social-share-transparent justify-content-end">
+                                                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                                                <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                                                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                                                <li><a href="#"><i class="fas fa-link"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!-- End Post Content  -->
+                                </div>
+                                <!-- End Single Slide  -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Banner Area -->
+                <!-- Start Blog Details  -->
+                
+                <div class="axil-post-details">
+                    <p class="has-medium-font-size">
+                        @Model.Abstract
+                    </p>
+                    <figure class="wp-block-image alignwide text-center">
+                        <img src="" alt="Show the blogs Image here" />
+                    </figure>
+                    Here is where I'll tell you about some really cool stuff and a bit more in the content of my cool blog.
+                    <div class="tagcloud">
+                        @foreach(Tag tag in Model.Tags)
+                        {
+                            <span>@tag</span>
+                        }
+                    </div>
+                    <div class="social-share-block">
+                        <div class="post-like">
+                            <a href="#"><i class="fa-solid fa-thumbs-up"></i><span>2.2k Like</span></a>
+                        </div>
+                        <ul class="social-icon icon-rounded-transparent md-size">
+                            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                            <li><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
+                        </ul>
+                    </div>
+                    <!-- Start Author  -->
+                    <div class="about-author">
+                        <div class="media">
+                            <div class="thumbnail">
+                                <a href="#">
+                                    <img src="~/img/DefaultUserImage.png" alt="Author Images" style="height:120px;width:120px">
+                                </a>
+                            </div>
+                            <div class="media-body">
+                                <div class="author-info">
+                                    <h5 class="title">
+                                        <a class="hover-flip-item-wrapper" href="#">
+                                            <span class="hover-flip-item">
+                                                <span data-text="Blog Author">Blog Author</span>
+                                            </span>
+                                        </a>
+                                    </h5>
+                                    <span class="b3 subtitle">Software Developer</span>
+                                </div>
+                                <div class="content">
+                                    <p class="b1 description">
+                                        Write something interesting about yourself here.  Just a line or two...
+                                    </p>
+                                    <ul class="social-share-transparent size-md">
+                                        <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                                        <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                                        <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                                        <li><a href="#"><i class="far fa-envelope"></i></a></li>
+                                        <li><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- End Author  -->
+                    <!-- Start Comment Form Area  -->
+                    <div class="axil-comment-area">
+
+                        <!-- Start Comment Respond  -->
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <div class="comment-respond">
+                                <h4 class="title">Post a comment</h4>
+                                <form asp-action="" asp-controller="Comments" method="post">
+                                    <div class="row row-md-10">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="message">Leave a Reply</label>
+                                                <textarea id="editor" class="form-control" name=""></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="form-submit cerchio">
+                                            <input name="submit" type="submit" id="submit" class="axil-button button-rounded" value="Post Comment">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="axil-total-comment-post">
+                                @*<div class="title">
+                            <h4 class="mb--0">30+ Comments</h4>
+                            </div>*@
+                                <div class="add-comment-button cerchio">
+                                    <a class="axil-button button-rounded" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "BlogPosts", new { id = Model.Id })" tabindex="0"><span>Login to Add Your Comment</span></a>
+                                </div>
+                            </div>
+                        }
+                        <!-- End Comment Respond  -->
+                        <!-- Start Comment Area  -->
+                        <div class="axil-comment-area">
+                            <h4 class="title">Show the total number of comments again</h4>
+                            <ul class="comment-list">
+                                @foreach (Comment comment in Model.Comments)
+                                {
+                                    <!-- Start Single Comment  -->
+                                    <li class="comment">
+                                        <div class="comment-body">
+                                            <div class="single-comment">
+                                                <div class="comment-img">
+                                                    <img src="~/img/DefaultUserImage.png" alt="Author Images" style="height:40px;width:40px">
+                                                </div>
+                                                <div class="comment-inner">
+                                                    <h6 class="commenter">
+                                                        <a class="hover-flip-item-wrapper" href="#">
+                                                            <span class="hover-flip-item">
+                                                                <span data-text="@comment.Author?.FullName">@comment.Author?.FullName</span>
+                                                            </span>
+                                                        </a>
+                                                    </h6>
+                                                    <div class="comment-meta">
+                                                        <div class="time-spent">For the comment day here</div>
+                                                        <div class="reply-edit">
+                                                        </div>
+                                                    </div>
+                                                    <div class="comment-text">
+                                                        <p class="b2">
+                                                            @Html.Raw(comment.Body)
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <!-- End Single Comment  -->
+                                }
+                            </ul>
+                        </div>
+                        <!-- End Comment Area  -->
+                    </div>
+                    <!-- End Comment Form Area  -->
+
+                </div>
+                <!-- End Blog Details  -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Post Single Wrapper  -->
+@section scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <!--CK Editor-->
+    <script src="https://cdn.ckeditor.com/ckeditor5/37.1.0/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                licenseKey: '',
+            })
+            .then(editor => {
+                window.editor = editor;
+            });;
+    </script>
+}
+
+@*@{
     ViewData["Title"] = "Details";
 }
 
@@ -29,16 +273,16 @@
             @Html.DisplayFor(model => model.Content)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Created)
+            @Html.DisplayNameFor(model => model.CreatedDate)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Created)
+            @Html.DisplayFor(model => model.CreatedDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Updated)
+            @Html.DisplayNameFor(model => model.UpdatedDate)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Updated)
+            @Html.DisplayFor(model => model.UpdatedDate)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Slug)
@@ -74,11 +318,20 @@
             @Html.DisplayNameFor(model => model.Category)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category.Name)
+            @Html.DisplayFor(model => model.Category!.Name)
         </dd>
     </dl>
+    <div>
+        @foreach (Comment comment in Model.Comments)
+        {
+            <p>
+                @comment.Body @comment.CreatedDate.ToString("MM.dd.yy") @comment.Author?.FullName
+            </p>
+        }
+    </div>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+*@

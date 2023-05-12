@@ -56,9 +56,8 @@ namespace CrucibleBlog.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Created")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<byte[]>("ImageData")
                         .HasColumnType("bytea");
@@ -80,8 +79,8 @@ namespace CrucibleBlog.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Updated")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -113,6 +112,12 @@ namespace CrucibleBlog.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ImageType")
+                        .HasColumnType("text");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -200,10 +205,8 @@ namespace CrucibleBlog.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("AuthorId1")
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("BlogPostId")
@@ -214,20 +217,19 @@ namespace CrucibleBlog.Data.Migrations
                         .HasMaxLength(5000)
                         .HasColumnType("character varying(5000)");
 
-                    b.Property<string>("Created")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdateReason")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Updated")
-                        .HasColumnType("text");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId1");
+                    b.HasIndex("AuthorId");
 
                     b.HasIndex("BlogPostId");
 
@@ -412,10 +414,12 @@ namespace CrucibleBlog.Data.Migrations
                 {
                     b.HasOne("CrucibleBlog.Models.BlogUser", "Author")
                         .WithMany("Comment")
-                        .HasForeignKey("AuthorId1");
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CrucibleBlog.Models.BlogPost", "BlogPost")
-                        .WithMany("Comment")
+                        .WithMany("Comments")
                         .HasForeignKey("BlogPostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -478,7 +482,7 @@ namespace CrucibleBlog.Data.Migrations
 
             modelBuilder.Entity("CrucibleBlog.Models.BlogPost", b =>
                 {
-                    b.Navigation("Comment");
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("CrucibleBlog.Models.BlogUser", b =>

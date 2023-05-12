@@ -7,17 +7,22 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CrucibleBlog.Controllers
 {
+    [Authorize]
     public class CommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+		private readonly UserManager<BlogUser> _userManager;
 
-        public CommentsController(ApplicationDbContext context)
+		public CommentsController(ApplicationDbContext context, UserManager<BlogUser> userManager)
         {
             _context = context;
-        }
+			_userManager = userManager;
+		}
 
         // GET: Comments
         public async Task<IActionResult> Index()
@@ -48,7 +53,9 @@ namespace CrucibleBlog.Controllers
         // GET: Comments/Create
         public IActionResult Create()
         {
-            ViewData["BlogPostId"] = new SelectList(_context.BlogPosts, "Id", "Content");
+            Comment comment = new() {AuthorId = _userManager.GetUserId(User)};
+			ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id");
+			ViewData["BlogPostId"] = new SelectList(_context.BlogPosts, "Id", "Content");
             return View();
         }
 
@@ -57,14 +64,19 @@ namespace CrucibleBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Body,Created,Updated,UpdateReason,BlogPostId,AuthorId")] Comment comment)
+        public async Task<IActionResult> Create([Bind("Id,Body,CreatedDate,BlogPostId")] Comment comment)
         {
+            ModelState.Remove("AuthorId");
             if (ModelState.IsValid)
             {
+                comment.CreatedDate = DateTime.UtcNow;
+                comment.AuthorId = _userManager.GetUserId(User);
+
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", comment.AuthorId);
             ViewData["BlogPostId"] = new SelectList(_context.BlogPosts, "Id", "Content", comment.BlogPostId);
             return View(comment);
         }
