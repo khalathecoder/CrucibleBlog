@@ -19,7 +19,7 @@ namespace CrucibleBlog.Services
                     case 2: return _defaultBlogImage;
                     //Return The default cat image if the value is 2
                     case 3: return _defaultCategoryImage;
-                        
+
                 }
             }
 

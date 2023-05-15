@@ -10,6 +10,8 @@ using CrucibleBlog.Models;
 using CrucibleBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using CrucibleBlog.Services;
+using CrucibleBlog.Helpers;
 
 namespace CrucibleBlog.Controllers
 {
@@ -19,12 +21,14 @@ namespace CrucibleBlog.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BlogUser> _userManager;
         private readonly IImageService _imageService;
+        private readonly IBlogService _blogService;
 
-        public BlogPostsController(ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService)
+        public BlogPostsController(ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService, IBlogService blogService)
         {
             _context = context;
             _userManager = userManager;
             _imageService = imageService;
+            _blogService = blogService;
         }
 
         // GET: BlogPosts
@@ -37,18 +41,19 @@ namespace CrucibleBlog.Controllers
 
         // GET: BlogPosts/Details/5
         [AllowAnonymous]
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string? slug)
         {
-            if (id == null || _context.BlogPosts == null)
+            if (string.IsNullOrEmpty(slug))
             {
                 return NotFound();
             }
 
-            var blogPost = await _context.BlogPosts
-                .Include(b => b.Category)
-                //.Include(b => b.Comments)
-                    //.ThenInclude(c=>c.Author)
-                .FirstOrDefaultAsync(m => m.Id == id);
+          BlogPost? blogPost = await _context.BlogPosts
+                                            .Include(b => b.Category)
+                                            .Include(b => b.Comments)
+                                                .ThenInclude(c=>c.Author)
+                                            .FirstOrDefaultAsync(m => m.Slug == slug);
+
             if (blogPost == null)
             {
                 return NotFound();
@@ -73,9 +78,19 @@ namespace CrucibleBlog.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,IsPublished,CategoryId,ImageData,ImageType")] BlogPost blogPost)
         {
+            ModelState.Remove("Slug");
             
             if (ModelState.IsValid)
             {
+                if (!await _blogService.ValidSlugAsync(blogPost.Title, blogPost.Id))
+                {
+                    ModelState.AddModelError("Title", "A similar Title/Slug is already in use.");
+
+					ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
+					return View(blogPost);
+				}
+
+                blogPost.Slug = StringHelper.BlogPostSlug(blogPost.Title); //turning title based on stringhelper info and logging it to blogpost.Slug in db
               
                 blogPost.CreatedDate = DateTime.UtcNow;          
 
@@ -83,9 +98,9 @@ namespace CrucibleBlog.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
-            return View(blogPost);
-        }
+			ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
+			return View(blogPost);
+		}
 
         // GET: BlogPosts/Edit/5
         public async Task<IActionResult> Edit(int? id)

@@ -1,3 +1,4 @@
+using CrucibleBlog.Controllers;
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
 using CrucibleBlog.Services;
@@ -30,6 +31,7 @@ builder.Services.AddMvc();
 //Custom Services
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 //Custom EmailSettings
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
@@ -57,6 +59,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "custom",
+    pattern: "Content/{slug}",
+    defaults: new {controller = "BlogPosts", action = "Details"}); //will only work for controller and action specified
 
 app.MapControllerRoute(
     name: "default",

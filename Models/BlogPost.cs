@@ -25,8 +25,8 @@ namespace CrucibleBlog.Models
         [DataType(DataType.DateTime)]
         public DateTime UpdatedDate { get; set; }
 
-        //TODO: MAKE THIS REQUIRED LATER
-        public string? Slug { get; set; }
+		[Required]
+		public string? Slug { get; set; }
 
         [Display(Name = "Deleted?")] //remove items from db
         public bool IsDeleted { get; set; }
