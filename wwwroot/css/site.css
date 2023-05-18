@@ -53,3 +53,20 @@ body {
 .my-page-item my-page-link li:last-child a {
     border-radius: 0 40px 40px 0;
 }
+
+
+.tagcloud > a:hover {
+    color: white !important;
+}
+
+.tagcloud > a.disabledTag {
+    background-color: lightgray;
+    color: gray;
+    font-weight: bold;
+}
+
+.tagcloud > a.disabledTag:hover {
+    background-color: lightgray;
+    color: darkgray !important;
+    border-color: lightgray;
+}

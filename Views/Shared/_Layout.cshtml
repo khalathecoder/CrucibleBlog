@@ -15,7 +15,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Author || Blogar - Personal Blog Template</title>
+    <title>Khala Wright || Personal Blog</title>
     <meta name="robots" content="noindex, follow" />
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -105,8 +105,63 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li><a href="home-lifestyle-blog.html">Lifestyle</a></li>
-                                    <li><a href="home-tech-blog.html">Gadgets</a></li>
+                                    <li><a asp-action="ContactMe" asp-controller="Home">Contact</a></li>
+                                    @if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
+                                    {
+                                        <li><a asp-action="FavoriteBlogs" asp-controller="BlogPosts">Favorites</a></li>
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li class="menu-item-has-children">
+                                            <a href="#">Author</a>
+                                            <ul class="axil-submenu">
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" asp-controller="BlogPosts" asp-action="Index">
+                                                        <span class="">
+                                                            <span>Admin</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" href="~/swagger">
+                                                        <span class="">
+                                                            <span>APIs</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" asp-controller="BlogPosts" asp-action="Create">
+                                                        <span class="">
+                                                            <span>Add New Post</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" asp-controller="BlogPosts" asp-action="AdminPage">
+                                                        <span class="hover-flip-item">
+                                                            <span data-text="Manage Posts">Manage Posts</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" asp-controller="Categories" asp-action="Index">
+                                                        <span class="hover-flip-item">
+                                                            <span data-text="Manage Categories">Manage Categories</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="hover-flip-item-wrapper" asp-controller="Tags" asp-action="Index">
+                                                        <span class="hover-flip-item">
+                                                            <span data-text="Manage Tags">Manage Tags</span>
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
+@*                                    <li><a href="home-lifestyle-blog.html">Lifestyle</a></li>
+                                    <li><a href="home-tech-blog.html">Gadgets</a></li>*@
                                 </ul>
                                 <!-- End Mainmanu Nav -->
                             </nav>
@@ -115,18 +170,19 @@
 
                     <div class="col-xl-3 col-lg-8 col-md-8 col-sm-9 col-12">
                         <div class="header-search text-end d-flex align-items-center">
-                            <form class="header-search-form d-sm-block d-none">
+                            <form asp-action="SearchIndex" asp-controller="Home" class="header-search-form d-sm-block d-none">
                                 <div class="axil-search form-group">
                                     <button type="submit" class="search-button"><i class="fal fa-search"></i></button>
-                                    <input type="text" class="form-control" placeholder="Search">
+                                    <input name="searchString" type="text" class="form-control" placeholder="Search">
                                 </div>
                             </form>
+                            @*This is the mobile version*@
                             <div class="mobile-search-wrapper d-sm-none d-block">
                                 <button class="search-button-toggle"><i class="fal fa-search"></i></button>
-                                <form class="header-search-form">
+                                <form asp-action="SearchIndex" asp-controller="Home" class="header-search-form">
                                     <div class="axil-search form-group">
                                         <button type="submit" class="search-button"><i class="fal fa-search"></i></button>
-                                        <input type="text" class="form-control" placeholder="Search">
+                                        <input name="searchString" type="text" class="form-control" placeholder="Search">
                                     </div>
                                 </form>
                             </div>

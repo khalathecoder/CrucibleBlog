@@ -5,7 +5,7 @@
 @inject IImageService _ImageService
 
 @{
-	ViewData["Title"] = "Index";
+    ViewData["Title"] = "Index";
 }
 
 
@@ -25,9 +25,9 @@
                 @foreach (BlogPost blogPost in Model)
                 {
                     <partial name="_BlogCard" model="@blogPost" />
-                    
+
                 }
-			</div>
-		</div>
-	</div>
+            </div>
+        </div>
+    </div>
 </div>

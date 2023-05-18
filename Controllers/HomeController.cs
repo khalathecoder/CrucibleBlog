@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
+using CrucibleBlog.Services;
 using CrucibleBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,17 @@ namespace CrucibleBlog.Controllers
 		private readonly ApplicationDbContext _context;
 		private readonly UserManager<BlogUser> _userManager;
 		private readonly IImageService _imageService;
+        private readonly IBlogService _blogService;
 
 
-		public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService, IBlogService blogService)
         {
             _logger = logger;
             _context = context;
 			_userManager = userManager;
 			_imageService = imageService;
-		}
+            _blogService = blogService;
+        }
         
         public async Task<IActionResult> Index(int? pageNum)
         {
@@ -32,11 +35,25 @@ namespace CrucibleBlog.Controllers
 
             IPagedList<BlogPost> blogPosts = await _context.BlogPosts.Include(b => b.Category).ToPagedListAsync(pageNum, pageSize);
 
+            ViewData["ActionName"] = "Index";
 
 			return View(blogPosts);
 		}
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> SearchIndex(string? searchString, int? pageNum)
+        {
+            int pageSize = 4;
+            int page = pageNum ?? 1;  //if pageNum is null, set page to 1
+
+            IPagedList<BlogPost> blogPosts = await _blogService.SearchBlogPosts(searchString).ToPagedListAsync(page, pageSize);
+
+			ViewData["ActionName"] = "SearchIndex";
+
+			return View(nameof(Index), blogPosts);
+        }
+    
+
+    public IActionResult Privacy()
         {
             return View();
         }

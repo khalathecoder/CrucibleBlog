@@ -10,6 +10,8 @@ namespace CrucibleBlog.Data
             : base(options)
         {
         }
+
+        public virtual DbSet<BlogLike> BlogLikes { get; set; } = default!;
         public virtual DbSet<BlogPost> BlogPosts { get; set; } = default!;
         public virtual DbSet<Category> Categories { get; set; } = default!;
         public virtual DbSet<Comment> Comments { get; set; } = default!;

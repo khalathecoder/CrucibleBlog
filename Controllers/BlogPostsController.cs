@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using CrucibleBlog.Services;
 using CrucibleBlog.Helpers;
+using X.PagedList;
 
 namespace CrucibleBlog.Controllers
 {
@@ -39,6 +40,8 @@ namespace CrucibleBlog.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+
+
         // GET: BlogPosts/Details/5
         [AllowAnonymous]
         public async Task<IActionResult> Details(string? slug)
@@ -52,7 +55,9 @@ namespace CrucibleBlog.Controllers
                                             .Include(b => b.Category)
                                             .Include(b => b.Comments)
                                                 .ThenInclude(c=>c.Author)
-                                            .FirstOrDefaultAsync(m => m.Slug == slug);
+                                            .Include(b=>b.Tags)
+											.Include(b => b.Likes)
+											.FirstOrDefaultAsync(m => m.Slug == slug);
 
             if (blogPost == null)
             {
@@ -62,7 +67,7 @@ namespace CrucibleBlog.Controllers
             return View(blogPost);
         }
 
-        // GET: BlogPosts/Create
+        // GET: BlogPosts/Create //get method says hey just show me that page
         public IActionResult Create()   
         {
             BlogPost blogPost = new BlogPost();
@@ -74,29 +79,37 @@ namespace CrucibleBlog.Controllers
         // POST: BlogPosts/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost] //post means we are receiving new info 
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,IsPublished,CategoryId,ImageData,ImageType")] BlogPost blogPost)
+        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,IsPublished,CategoryId,ImageData,ImageType")] BlogPost blogPost, string? stringTags)
         {
-            ModelState.Remove("Slug");
+            ModelState.Remove("Slug"); //removes requirement for slug 
             
             if (ModelState.IsValid)
+
             {
+              
                 if (!await _blogService.ValidSlugAsync(blogPost.Title, blogPost.Id))
                 {
                     ModelState.AddModelError("Title", "A similar Title/Slug is already in use.");
 
 					ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
 					return View(blogPost);
-				}
+				}             
 
-                blogPost.Slug = StringHelper.BlogPostSlug(blogPost.Title); //turning title based on stringhelper info and logging it to blogpost.Slug in db
+				blogPost.Slug = StringHelper.BlogPostSlug(blogPost.Title); //turning title based on stringhelper info and logging it to blogpost.Slug in db
               
                 blogPost.CreatedDate = DateTime.UtcNow;          
 
                 _context.Add(blogPost);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+				if (!string.IsNullOrEmpty(stringTags)) //blogpost needs to be saved first before we can add the tags, reason why this if statement is placed after savechanges async
+				{
+					await _blogService.AddTagsToBlogPostAsync(stringTags, blogPost.Id); // add the tags!
+				}
+
+				return RedirectToAction(nameof(Index));
             }
 			ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
 			return View(blogPost);
@@ -202,9 +215,51 @@ namespace CrucibleBlog.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> LikeBlogPost(int blogPostId, string blogUserId)
+        {
+            //check if user has already liked the blog
+            //get the user
+            BlogUser? blogUser = await _context.Users
+                                                .Include(u => u.BlogLikes)
+                                                .FirstOrDefaultAsync(u => u.Id == blogUserId);
+            bool result = false;
+            BlogLike? blogLike = new();
+
+            if (blogUser != null)
+            {
+                if (!blogUser.BlogLikes.Any(bl=>bl.BlogPostId == blogPostId))
+                {
+                    blogLike = new BlogLike()
+                    {
+                        BlogPostId = blogPostId,
+                        IsLiked = true
+                    };
+
+                    blogUser.BlogLikes.Add(blogLike);
+                }
+                //if a like already exists on this blogpost for this user
+                else
+                {
+                    blogLike = await _context.BlogLikes.FirstOrDefaultAsync(bl=>bl.BlogPostId == blogPostId && bl.BlogUserId == blogUserId);
+
+                    //modify the isliked to the inverse of its current state (t/f)
+                    blogLike!.IsLiked = !blogLike.IsLiked;
+                }
+                result = blogLike.IsLiked;
+                await _context.SaveChangesAsync();
+            }
+            return Json(new
+            {
+                isLiked = result,
+                count = _context.BlogLikes.Where(bl => bl.BlogPostId == blogPostId && bl.IsLiked == true).Count()
+            }); ;
+        }
+
         private bool BlogPostExists(int id)
         {
             return (_context.BlogPosts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+
     }
 }
