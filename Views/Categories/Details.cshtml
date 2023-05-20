@@ -1,10 +1,61 @@
 ﻿@model CrucibleBlog.Models.Category
+@using X.PagedList;
+
+@using CrucibleBlog.Enums;
+@using CrucibleBlog.Services.Interfaces
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@inject IImageService _ImageService
 
 @{
     ViewData["Title"] = "Details";
+    string? actionName = ViewBag.ActionName;
 }
 
-<h1>Details</h1>
+
+<partial name="_AuthorArea" />
+
+
+<!-- Start Post List Wrapper  -->
+<div class="axil-post-list-area axil-section-gap bg-color-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-title">
+                    <h2 class="title mb--40">Blogs in this @Model.Name</h2>
+                </div>
+            </div>
+            <div class="col-lg-8 col-xl-8">
+                @foreach (BlogPost blogPost in Model.BlogPosts)
+                {
+                    <partial name="_BlogCard" model="@blogPost" />
+                }
+                @*<div>
+                    <div>
+                        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+                    </div>
+
+                    @Html.PagedListPager(Model, pageNum => Url.Action(actionName, new{pageNum}),
+                    new PagedListRenderOptions
+                    {
+                    LiElementClasses = new string[] {"my-page-item"},
+                    PageClasses = new string[] {"my-page-link"}
+                    }
+
+                    )
+
+                </div>*@
+            </div>
+
+            <partial name="_Sidebar" />
+
+        </div>
+    </div>
+</div>
+<!-- End Post List Wrapper  -->
+
+
+@*<h1>Details</h1>
 
 <div>
     <h4>Category</h4>
@@ -35,8 +86,12 @@
             @Html.DisplayFor(model => model.ImageType)
         </dd>
     </dl>
-</div>
-<div>
+</div>*@
+
+
+
+
+@*<div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
-</div>
+</div>*@

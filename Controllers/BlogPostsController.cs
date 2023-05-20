@@ -81,15 +81,21 @@ namespace CrucibleBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost] //post means we are receiving new info 
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,IsPublished,CategoryId,ImageData,ImageType")] BlogPost blogPost, string? stringTags)
+        public async Task<IActionResult> Create([Bind("Id,Title,Abstract,Content,CreatedDate,IsDeleted,IsPublished,CategoryId,ImageFile")] BlogPost blogPost, string? stringTags)
         {
             ModelState.Remove("Slug"); //removes requirement for slug 
             
             if (ModelState.IsValid)
 
             {
-              
-                if (!await _blogService.ValidSlugAsync(blogPost.Title, blogPost.Id))
+
+				if (blogPost.ImageFile != null)
+				{
+					blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
+					blogPost.ImageType = blogPost.ImageFile.ContentType;
+				}
+
+				if (!await _blogService.ValidSlugAsync(blogPost.Title, blogPost.Id))
                 {
                     ModelState.AddModelError("Title", "A similar Title/Slug is already in use.");
 
@@ -123,11 +129,19 @@ namespace CrucibleBlog.Controllers
                 return NotFound();
             }
 
-            var blogPost = await _context.BlogPosts.FindAsync(id);
+            BlogPost? blogPost = await _context.BlogPosts
+                                               .Include(b=>b.Tags)
+                                               .FirstOrDefaultAsync(b=>b.Id == id);
+
             if (blogPost == null)
             {
                 return NotFound();
             }
+
+            List<string> tagNames = blogPost.Tags.Select(t=>t.Name!).ToList();
+            ViewData["Tags"] = string.Join(", ", tagNames) + ", ";
+
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
             return View(blogPost);
         }
@@ -137,29 +151,50 @@ namespace CrucibleBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Abstract,Content,Created,Updated,Slug,IsDeleted,IsPublished,CategoryId,ImageData,ImageType")] BlogPost blogPost)
-        {
-            if (id != blogPost.Id)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Abstract,Content,Slug, CreatedDate, UpdatedDate,IsDeleted,IsPublished,CategoryId,ImageFile,ImageData,ImageType")] BlogPost blogPost, string? stringTags)
+        {		
+			if (id != blogPost.Id) //security purposes, works with ValidatAntiForgeryToken, when form submitted the blogpostId submitted must match id in db
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+			ModelState.Remove("Slug");
+
+			if (ModelState.IsValid)
             {
-                try
+				
+				try
                 {
-                    blogPost.UpdatedDate = DateTime.UtcNow;
-                    blogPost.CreatedDate = DateTime.SpecifyKind(blogPost.CreatedDate, DateTimeKind.Utc);
+					if (!await _blogService.ValidSlugAsync(blogPost.Title, blogPost.Id))
+					{
+						ModelState.AddModelError("Title", "A similar Title/Slug is already in use.");
 
-                    if (blogPost.ImageFile != null)
-                    {
-                        blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
-                        blogPost.ImageType = blogPost.ImageFile.ContentType;
-                    }
+                        ViewData["Tags"] = stringTags != null && stringTags.Trim().EndsWith(",") ? stringTags : stringTags + ", ";
+						ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
+						return View(blogPost);
+					}
 
-                    _context.Update(blogPost);
-                    await _context.SaveChangesAsync();
-                }
+					blogPost.Slug = StringHelper.BlogPostSlug(blogPost.Title);
+
+					if (blogPost.ImageFile != null)
+					{
+						blogPost.ImageData = await _imageService.ConvertFileToByteArrayAsync(blogPost.ImageFile);
+						blogPost.ImageType = blogPost.ImageFile.ContentType;
+					}
+
+					blogPost.UpdatedDate = DateTime.UtcNow;
+					blogPost.CreatedDate = DateTime.SpecifyKind(blogPost.CreatedDate, DateTimeKind.Utc); //takes created date and converts it back too utc since submitted form changes the format
+
+					_context.Update(blogPost); //we need this here because the info came from the form not from the db
+					await _context.SaveChangesAsync();
+
+                    //TAG TIME
+					await _blogService.RemoveAllBlogPostTagsAsync(blogPost.Id);
+					if (!string.IsNullOrEmpty(stringTags)) //blogpost needs to be saved first before we can add the tags, reason why this if statement is placed after savechanges async
+					{
+						await _blogService.AddTagsToBlogPostAsync(stringTags, blogPost.Id); // add the tags!
+					}								
+				}
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!BlogPostExists(blogPost.Id))
@@ -171,9 +206,11 @@ namespace CrucibleBlog.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new { slug = blogPost.Slug});
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
+
+			ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
+
             return View(blogPost);
         }
 
@@ -260,6 +297,5 @@ namespace CrucibleBlog.Controllers
             return (_context.BlogPosts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-
-    }
+	}
 }

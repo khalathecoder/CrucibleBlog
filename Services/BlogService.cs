@@ -73,6 +73,27 @@ namespace CrucibleBlog.Services
 			}
 		}
 
+		public async Task RemoveAllBlogPostTagsAsync(int? blogPostId)
+		{
+			try
+			{
+				BlogPost? blogPost = await _context.BlogPosts
+													.Include(c => c.Tags)
+													.FirstOrDefaultAsync(c => c.Id == blogPostId);
+				if(blogPost == null) return;
+
+				blogPost!.Tags.Clear();
+
+				//_context.Update(blogPost); //notifies entity fw that we made changes to model but doesnt yet save
+				await _context.SaveChangesAsync();
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
+
 		public async Task<IEnumerable<Category>> GetCategoriesAsync()
 		{
 			try
@@ -123,11 +144,6 @@ namespace CrucibleBlog.Services
 		}
 
 		public Task<bool> IsTagOnBlogPostAsync(int? tagId, int? blogPostId)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task RemoveAllBlogPostTagsAsync(int? blogPostId)
 		{
 			throw new NotImplementedException();
 		}
@@ -186,7 +202,7 @@ namespace CrucibleBlog.Services
 
 				string? newSlug = StringHelper.BlogPostSlug(title); //because StringHelper is static, do not need to instantiate StringHelper, can use dot notation as is without instantiation "static is the blueprint and the house"
 
-				if (blogPostId == null)
+				if (blogPostId == null || blogPostId == 0)
 				{
 					//Creating BlogPost
 					return !await _context.BlogPosts.AnyAsync(b=>b.Slug == newSlug); //check if any slug in db is == to slug that i just created
@@ -197,7 +213,7 @@ namespace CrucibleBlog.Services
 					BlogPost? blogPost = await _context.BlogPosts.AsNoTracking().FirstOrDefaultAsync(b=>b.Id == blogPostId); //Asnotracking: keep track of data but dont let entity framework know what I am doing
 					string? oldSlug = blogPost?.Slug; //hold that info above here
 
-					if(string.Equals(oldSlug, newSlug)) //compare oldSlug to newSlug
+					if(!string.Equals(oldSlug, newSlug)) //compare oldSlug to newSlug
 					{
 						return await _context.BlogPosts.AnyAsync(b => b.Id != blogPost!.Id && b.Slug == newSlug); //check all other blogposts for this particular slug
 					}

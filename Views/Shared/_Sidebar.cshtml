@@ -13,7 +13,7 @@
 				@foreach (Category category in (await _BlogService.GetCategoriesAsync()).Take(4)) @*Use take 4 to only allow 4 of the foreach*@
 				{
 					<li class="cat-item">
-						<a href="#" class="inner">
+						<a asp-controller="Categories" asp-action="Details" asp-route-id="@category.Id" class="inner">
 							<div class="thumbnail">
 								<img src="@_ImageService.ConvertByteArrayToFile(category.ImageData,category.ImageType,(int)DefaultImage.CategoryImage)" alt="">
 							</div>

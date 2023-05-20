@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
+using X.PagedList;
 
 namespace CrucibleBlog.Controllers
 {
@@ -35,8 +36,10 @@ namespace CrucibleBlog.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Category? category = await _context.Categories
+                                                .Include(c=>c.BlogPosts)                                                 
+                                                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (category == null)
             {
                 return NotFound();
