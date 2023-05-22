@@ -1,9 +1,10 @@
 ﻿@model CrucibleBlog.Models.BlogPost
 
 @using CrucibleBlog.Enums;
-@using CrucibleBlog.Services.Interfaces
+@using CrucibleBlog.Services.Interfaces;
 @using Microsoft.AspNetCore.Identity;
-@inject IImageService _ImageService
+
+@inject IImageService _ImageService	
 @inject IBlogService _BlogService
 @inject UserManager<BlogUser> _UserManager
 @inject SignInManager<BlogUser> _SignInManager
@@ -97,10 +98,10 @@
 					</div>
 					<div class="social-share-block">
 						<div class="post-like">
-							<a id="likesButton"
+							<a id="likesButton">
 							@if (isLiked)
 							{
-									<i id="faThumb" class="fal fa-thumbs-up" @*style="background-color:red;color:white;border-color:white"*@></i>
+									<i id="faThumb" class="fal fa-thumbs-up" style="background-color:red;color:white;border-color:white"></i>
 							}
 							else
 							{
@@ -158,15 +159,17 @@
 						<!-- Start Comment Respond  -->
 						@if (User.Identity!.IsAuthenticated)
 						{
+
 							<div class="comment-respond">
 								<h4 class="title">Post a comment</h4>
 								<form asp-action="Create" asp-controller="Comments">
+									<input type="hidden" asp-for="Id" name="BlogPostId">								
+									<input type="hidden" asp-for="Slug" >
 									<div class="row row-md-10">
 										<div class="col-12">
 											<div class="form-group">
-												<label>Leave a Reply</label>
-												<textarea asp-action="" id="editor" class="form-control" name=""></textarea>
-												@*<span asp-validation-for="Body" class="text-danger"></span>*@
+												<label class="control-label">Leave a Reply</label>
+												<textarea id="editor" class="form-control" name="Body"></textarea>
 											</div>
 										</div>
 									</div>
@@ -185,7 +188,7 @@
 							<h4 class="mb--0">30+ Comments</h4>
 							</div>*@
 								<div class="add-comment-button cerchio">
-									<a class="axil-button button-rounded" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "BlogPosts", new { id = Model.Id })" tabindex="0"><span>Login to Add Your Comment</span></a>
+									<a class="axil-button button-rounded" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "BlogPosts", new { id = Model.Id })" tabindex="0"><span>Login to Reply</span></a>
 								</div>
 							</div>
 						}
@@ -267,18 +270,21 @@
 			string userId = _UserManager.GetUserId(User);
 		}
 
-			let userId = '@userId'
+			let userId = '@userId';
 
 		$().ready(function () {
-			//if not logged into Swal
+			$('#likesButton').click(function(){
+
+			//if not logged in Swal!
 			if (userId == '') {
-				Swall.fire({
+				Swal.fire({
 					backdrop: false,
 					icon: 'warning',
 					title: 'Oops...',
 					text: 'You must be logged in to Like this post.'
 				});
 			} else {
+
 				let args = {
 					blogPostId: @Model.Id,
 					blogUserId: userId
@@ -298,7 +304,7 @@
 							$("#faThumb").css({ "background-color": "", "color": "", "border-color": "" });
 						}
 
-						$('#numLikes').html(Likes + ' Likes');
+						$('#numLikes').html(likes + ' Likes');
 					},
 					failure: function (result) {
 						alert(result.d);
@@ -314,20 +320,6 @@
 	</script>
 }
 
-
-
-
-
-
-
-@*<div>
-        @foreach (Comment comment in Model.Comments)
-        {
-            <p>
-                @comment.Body @comment.CreatedDate.ToString("MM.dd.yy") @comment.Author?.FullName
-            </p>
-        }
-    </div>*@
 
 
 

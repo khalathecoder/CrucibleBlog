@@ -36,7 +36,9 @@ namespace CrucibleBlog.Controllers
             }
 
             var tag = await _context.Tags
-                .FirstOrDefaultAsync(m => m.Id == id);
+				.Include(c => c.BlogPosts)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
             if (tag == null)
             {
                 return NotFound();

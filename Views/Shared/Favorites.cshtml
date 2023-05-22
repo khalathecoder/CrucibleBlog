@@ -3,9 +3,15 @@
 @using CrucibleBlog.Enums;
 @using CrucibleBlog.Services.Interfaces
 @inject IImageService _ImageService
+@inject IBlogService _BlogService
+@using Microsoft.AspNetCore.Identity;
+
+@inject UserManager<BlogUser> _UserManager
+@inject SignInManager<BlogUser> _SignInManager
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Favorites";
+    //bool isLiked = await _BlogService.UserLikedBlogAsync(Model.Id, _UserManager.GetUserId(User));
 }
 
 
@@ -15,18 +21,15 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="page-title">
-                    <h2 class="title mb--40">Articles By This Author</h2>
-                    <p>
-                        <a asp-action="Create">Create New</a>
-                    </p>
+                    <h2 class="title mb--40">Articles By This Author</h2>                 
                 </div>
             </div>
             <div class="col-lg-9 col-xl-9">
-                @foreach (BlogPost blogPost in Model)
+                @*@foreach (BlogPost blogPost in (await _BlogService.GetFavoriteBlogPostsAsync())) ;
                 {
                     <partial name="_BlogCard" model="@blogPost" />
 
-                }
+                }*@
             </div>
         </div>
     </div>

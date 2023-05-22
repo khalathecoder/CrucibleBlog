@@ -64,6 +64,9 @@ namespace CrucibleBlog.Controllers
                 return NotFound();
             }
 
+
+
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", blogPost.CategoryId);
             return View(blogPost);
         }
 
@@ -151,7 +154,7 @@ namespace CrucibleBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Abstract,Content,Slug, CreatedDate, UpdatedDate,IsDeleted,IsPublished,CategoryId,ImageFile,ImageData,ImageType")] BlogPost blogPost, string? stringTags)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Abstract,Content,Slug,Title,CreatedDate, UpdatedDate,IsDeleted,IsPublished,CategoryId,ImageFile,ImageData,ImageType")] BlogPost blogPost, string? stringTags)
         {		
 			if (id != blogPost.Id) //security purposes, works with ValidatAntiForgeryToken, when form submitted the blogpostId submitted must match id in db
             {
@@ -252,6 +255,7 @@ namespace CrucibleBlog.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
         public async Task<IActionResult> LikeBlogPost(int blogPostId, string blogUserId)
         {
             //check if user has already liked the blog

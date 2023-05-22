@@ -8,28 +8,40 @@ using Microsoft.EntityFrameworkCore;
 using CrucibleBlog.Data;
 using CrucibleBlog.Models;
 using X.PagedList;
+using CrucibleBlog.Services.Interfaces;
 
 namespace CrucibleBlog.Controllers
 {
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageService _imageService;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ApplicationDbContext context, IImageService imageService)
         {
             _context = context;
+            _imageService = imageService;
         }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-              return _context.Categories != null ? 
-                          View(await _context.Categories.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
+			//int pageSize = 4;
+			//int page = pageNum ?? 1;
+
+			//BlogPost blogPosts = await _context.BlogPosts.Include(b => b.Category).ToListAsync();
+
+			//ViewData["ActionName"] = "Details";
+
+			//return View(blogPosts);
+
+            return _context.Categories != null ?
+                                   View(await _context.Categories.ToListAsync()) :
+                                   Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
         }
 
         // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, int? pageNum)
         {
             if (id == null || _context.Categories == null)
             {
@@ -45,7 +57,13 @@ namespace CrucibleBlog.Controllers
                 return NotFound();
             }
 
-            return View(category);
+			int pageSize = 4;
+			int page = pageNum ?? 1;  //if pageNum is null, set page to 1
+
+			IPagedList<BlogPost> blogPosts = await (category.BlogPosts)
+                                                                    .ToPagedListAsync(page, pageSize);
+
+			return View(category);
         }
 
         // GET: Categories/Create
@@ -63,6 +81,12 @@ namespace CrucibleBlog.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (category.ImageFile != null)
+                {
+                    category.ImageData = await _imageService.ConvertFileToByteArrayAsync(category.ImageFile);
+                    category.ImageType = category.ImageFile.ContentType;
+                }
+
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -78,6 +102,7 @@ namespace CrucibleBlog.Controllers
                 return NotFound();
             }
 
+           
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
@@ -102,6 +127,12 @@ namespace CrucibleBlog.Controllers
             {
                 try
                 {
+                    if (category.ImageFile != null)
+                    {
+                        category.ImageData = await _imageService.ConvertFileToByteArrayAsync(category.ImageFile);
+                        category.ImageType = category.ImageFile.ContentType;
+                    }
+
                     _context.Update(category);
                     await _context.SaveChangesAsync();
                 }

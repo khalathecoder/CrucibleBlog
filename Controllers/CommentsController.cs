@@ -56,7 +56,7 @@ namespace CrucibleBlog.Controllers
             Comment comment = new() {AuthorId = _userManager.GetUserId(User)};
 			ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id");
 			ViewData["BlogPostId"] = new SelectList(_context.BlogPosts, "Id", "Content");
-            return View();
+            return View(comment);
         }
 
         // POST: Comments/Create
@@ -64,21 +64,22 @@ namespace CrucibleBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Body,CreatedDate,BlogPostId")] Comment comment)
+        public async Task<IActionResult> Create([Bind("Id,Body,BlogPostId")] Comment comment, string? slug)
         {
             ModelState.Remove("AuthorId");
             if (ModelState.IsValid)
             {
                 comment.CreatedDate = DateTime.UtcNow;
-                comment.AuthorId = _userManager.GetUserId(User);
+                comment.AuthorId = _userManager.GetUserId(User);          
 
-                _context.Add(comment);
+
+				_context.Add(comment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "BlogPosts", new {slug});
             }
             ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", comment.AuthorId);
             ViewData["BlogPostId"] = new SelectList(_context.BlogPosts, "Id", "Content", comment.BlogPostId);
-            return View(comment);
+            return RedirectToAction("Index", new { comment.BlogPostId });
         }
 
         // GET: Comments/Edit/5

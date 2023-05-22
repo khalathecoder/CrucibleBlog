@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList;
 
@@ -20,9 +21,10 @@ namespace CrucibleBlog.Controllers
         private readonly IImageService _imageService;
         private readonly IBlogService _blogService;
         private readonly IEmailSender _emailService;
+        private readonly IConfiguration _configuration;
 
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService, IBlogService blogService, IEmailSender emailService)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<BlogUser> userManager, IImageService imageService, IBlogService blogService, IEmailSender emailService, IConfiguration configuration)
         {
             _logger = logger;
             _context = context;
@@ -30,6 +32,7 @@ namespace CrucibleBlog.Controllers
             _imageService = imageService;
             _blogService = blogService;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index(int? pageNum)
@@ -56,49 +59,48 @@ namespace CrucibleBlog.Controllers
             return View(nameof(Index), blogPosts);
         }
 
-        //[Authorize]
-        //[HttpGet]
-        //public async Task<IActionResult> ContactMe()
-        //{
-        //    string? blogUserId = _userManager.GetUserId(User);
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> ContactMe()
+        {
+            string? blogUserId = _userManager.GetUserId(User);
 
-        //    if (blogUserId == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (blogUserId == null)
+            {
+                return NotFound();
+            }
 
-        //    BlogUser? blogUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == blogUserId);
-        //    return View(blogUser);
-        //}
-
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> ContactMe([Bind("FirstName,LastName,Email")] BlogUser blogUser, string? message)
-        //{
-        //    string? swalMessage = string.Empty;
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            string? adminEmail = _configuration["AdminLoginEmail"] ?? Environment.GetEnvironmentVariable("AdminLoginEmail");
-        //            await _emailService.SendEmailAsync(adminEmail!, $"Contact Me Message From - {blogUser.FullName}", message!);
-        //            swalMessage = "Email sent successfully!";
-        //        }
-        //        catch (Exception)
-        //        {
-
-        //            throw;
-        //        }
-
-        //        swalMessage = "Error: Unable to Send email.";
-        //    }
-        //    return RedirectToAction("Index", new { swalMessage });
-        //}
+            BlogUser? blogUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == blogUserId);
+            return View(blogUser);
+        }
 
 
-    public IActionResult Privacy()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ContactMe([Bind("FirstName,LastName,Email")] BlogUser blogUser, string? message)
+        {
+            string? swalMessage = string.Empty;
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    string? adminEmail = _configuration["AdminLoginEmail"] ?? Environment.GetEnvironmentVariable("AdminLoginEmail");
+                    await _emailService.SendEmailAsync(adminEmail!, $"Contact Me Message From - {blogUser.FullName}", message!);
+                    swalMessage = "Email sent successfully!";
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+                swalMessage = "Error: Unable to Send email.";
+            }
+            return RedirectToAction("Index", new { swalMessage });
+        }
+
+        public IActionResult Privacy()
         {
             return View();
         }
