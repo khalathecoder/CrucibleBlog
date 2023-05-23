@@ -60,7 +60,6 @@ namespace CrucibleBlog.Controllers
         }
 
         [Authorize]
-        [HttpGet]
         public async Task<IActionResult> ContactMe()
         {
             string? blogUserId = _userManager.GetUserId(User);
@@ -95,7 +94,7 @@ namespace CrucibleBlog.Controllers
                     throw;
                 }
 
-                swalMessage = "Error: Unable to Send email.";
+                swalMessage = "Error: Unable to send email.";
             }
             return RedirectToAction("Index", new { swalMessage });
         }
