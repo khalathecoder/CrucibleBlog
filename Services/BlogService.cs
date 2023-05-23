@@ -108,9 +108,25 @@ namespace CrucibleBlog.Services
 			}
 		}
 
-		public Task<IEnumerable<BlogPost>> GetPopularBlogPostsAsync()
+		public async Task<IEnumerable<BlogPost>> GetPopularBlogPostsAsync()
 		{
-			throw new NotImplementedException();
+			try
+			{
+				IEnumerable<BlogPost> blogPosts = await _context.BlogPosts
+															.Where(b => b.IsDeleted == false && b.IsPublished == true)
+															.Include(b => b.Category)
+															.Include(b => b.Comments)
+																.ThenInclude(c => c.Author)
+															.Include(b => b.Tags)
+															.ToListAsync();
+
+				return blogPosts.OrderByDescending(b => b.Comments.Count);
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
 		}
 
 		public async Task<IEnumerable<BlogPost>> GetPopularBlogPostsAsync(int? count)
@@ -133,14 +149,46 @@ namespace CrucibleBlog.Services
 			}
 		}
 
-		public Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync()
+		public async Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync()
 		{
-			throw new NotImplementedException();
+			try
+			{
+				IEnumerable<BlogPost> blogPosts = await _context.BlogPosts
+															.Where(b => b.IsDeleted == false && b.IsPublished == true)
+															.Include(b => b.Category)
+															.Include(b => b.Comments)
+																.ThenInclude(c => c.Author)
+															.Include(b => b.Tags)
+															.ToListAsync();
+
+				return blogPosts.OrderByDescending(b => b.CreatedDate);
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
 		}
 
-		public Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync(int? count)
+		public async Task<IEnumerable<BlogPost>> GetRecentBlogPostsAsync(int? count)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				IEnumerable<BlogPost> blogPosts = await _context.BlogPosts
+															.Where(b => b.IsDeleted == false && b.IsPublished == true)
+															.Include(b => b.Category)
+															.Include(b => b.Comments)
+																.ThenInclude(c => c.Author)
+															.Include(b => b.Tags)
+															.ToListAsync();
+
+				return blogPosts.OrderByDescending(b => b.CreatedDate).Take(count!.Value);
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
 		}
 
 		public Task<bool> IsTagOnBlogPostAsync(int? tagId, int? blogPostId)

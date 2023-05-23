@@ -105,7 +105,27 @@ namespace CrucibleBlog.Controllers
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		public async Task<IActionResult> Favorites(int? pageNum)
+		{
+            int pageSize = 4;
+            int page = pageNum ?? 1;  //if pageNum is null, set page to 1
+
+            IPagedList<BlogPost> blogPosts = await _context.BlogPosts.Include(b => b.Category).ToPagedListAsync(pageNum, pageSize);
+
+            ViewData["ActionName"] = "Index";
+
+            return View(blogPosts);
+        }
+		public IActionResult Recent()
+		{
+			return View();
+		}
+		public IActionResult Popular()
+		{
+			return View();
+		}
+
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

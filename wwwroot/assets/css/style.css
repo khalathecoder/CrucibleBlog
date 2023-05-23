@@ -183,6 +183,14 @@ mark {
   color: #ffffff;
 }
 
+.dark-logo {
+    height: 0.6em !important;
+}
+
+.light-logo {
+    height: 0.6em;
+}
+
 code,
 kbd,
 pre,
@@ -12390,3 +12398,4 @@ body.active-dark-mode .axil-footer-style-1 .footer-top .inner {
     color: #ffffff;
   }
 }
+

@@ -101,7 +101,7 @@
 							<a id="likesButton">
 							@if (isLiked)
 							{
-									<i id="faThumb" class="fal fa-thumbs-up" style="background-color:red;color:white;border-color:white"></i>
+									<i id="faThumb" class="fal fa-thumbs-up" style="background-color:purple;color:white;border-color:white"></i>
 							}
 							else
 							{
@@ -138,7 +138,7 @@
 								</div>
 								<div class="content">
 									<p class="b1 description">
-										Dunder Mifflin Dunder Mifflin Dunder Mifflin Dunder Mifflin
+										Full Stack web developer with several projects under my belt.
 									</p>
 									<ul class="social-share-transparent size-md">
 										<li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
@@ -237,16 +237,16 @@
 					<!-- End Comment Form Area  -->
 
 				</div>
+				<div>
+	<a asp-action="Index" asp-controller="Home"> < Back to List</a>
+</div>
 				<!-- End Blog Details  -->
 			</div>
 		</div>
 	</div>
 </div>
 <!-- End Post Single Wrapper  -->
-<div>
-	<a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-	<a asp-action="Index">Back to List</a>
-</div>
+
 
 
 @section scripts{

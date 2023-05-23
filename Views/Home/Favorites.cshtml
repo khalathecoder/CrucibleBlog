@@ -1,0 +1,48 @@
+﻿@model IEnumerable<CrucibleBlog.Models.BlogPost>
+
+@using CrucibleBlog.Enums;
+@using CrucibleBlog.Services.Interfaces
+@inject IImageService _ImageService
+@inject IBlogService _BlogService
+@using Microsoft.AspNetCore.Identity;
+
+@inject UserManager<BlogUser> _UserManager
+@inject SignInManager<BlogUser> _SignInManager
+
+@{
+    ViewData["Title"] = "Favorites";
+   //bool isLiked = await _BlogService.UserLikedBlogAsync(BlogPost.Id, _UserManager.GetUserId(User));
+}
+
+<div class="axil-post-list-area axil-section-gap bg-color-white">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="page-title">
+					<h2 class="title mb--40">Favorite Articles</h2>
+				</div>
+			</div>
+			<div class="col-lg-8 col-xl-8">
+				@foreach (BlogPost blogPost in await _BlogService.GetFavoriteBlogPostsAsync(_UserManager.GetUserId(User)))
+				{
+					<partial name="_BlogCard" model="@blogPost" />
+				}
+				@*<div>
+					<div>
+						Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+					</div>
+
+					@Html.PagedListPager(Model, pageNum => Url.Action(actionName, new{pageNum}),
+					new PagedListRenderOptions
+					{
+					LiElementClasses = new string[] {"my-page-item"},
+					PageClasses = new string[] {"my-page-link"}
+					})
+				</div>*@
+			</div>
+
+			<partial name="_Sidebar" />
+
+		</div>
+	</div>
+</div>

@@ -81,11 +81,11 @@ namespace CrucibleBlog.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (category.ImageFile != null)
-                {
-                    category.ImageData = await _imageService.ConvertFileToByteArrayAsync(category.ImageFile);
-                    category.ImageType = category.ImageFile.ContentType;
-                }
+                //if (category.ImageFile != null)
+                //{
+                //    category.ImageData = await _imageService.ConvertFileToByteArrayAsync(category.ImageFile);
+                //    category.ImageType = category.ImageFile.ContentType;
+                //}
 
                 _context.Add(category);
                 await _context.SaveChangesAsync();
